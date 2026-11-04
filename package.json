@@ -1,0 +1,144 @@
+{
+  "name": "ajayff4-claude-account-switcher",
+  "displayName": "Ajayff4 Claude Account Switcher",
+  "description": "Switch between multiple Claude Code accounts in VS Code: add, switch, log in, export/import and delete profiles from a sidebar panel. Unofficial.",
+  "version": "0.1.0",
+  "publisher": "ajayff4",
+  "license": "MIT",
+  "author": {
+    "name": "Ajay"
+  },
+  "icon": "resources/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ajayff4/claude-session-manager.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ajayff4/claude-session-manager/issues"
+  },
+  "homepage": "https://github.com/Ajayff4/claude-session-manager#readme",
+  "keywords": [
+    "claude",
+    "claude code",
+    "anthropic",
+    "switcher",
+    "multiple accounts"
+  ],
+  "categories": [
+    "Other"
+  ],
+  "galleryBanner": {
+    "color": "#2B1A14",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "claudeProfiles",
+          "title": "Claude Profiles",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "claudeProfiles": [
+        {
+          "id": "claudeProfiles.list",
+          "name": "Profiles",
+          "type": "webview",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "claudeProfiles.switch",
+        "title": "Switch Profile",
+        "category": "Claude Profiles",
+        "icon": "$(arrow-swap)"
+      },
+      {
+        "command": "claudeProfiles.add",
+        "title": "Add Profile",
+        "category": "Claude Profiles",
+        "icon": "$(add)"
+      },
+      {
+        "command": "claudeProfiles.login",
+        "title": "Log In (terminal)",
+        "category": "Claude Profiles",
+        "icon": "$(key)"
+      },
+      {
+        "command": "claudeProfiles.refresh",
+        "title": "Refresh",
+        "category": "Claude Profiles",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "claudeProfiles.import",
+        "title": "Import Profiles…",
+        "category": "Claude Profiles",
+        "icon": "$(cloud-download)"
+      },
+      {
+        "command": "claudeProfiles.export",
+        "title": "Export Profiles…",
+        "category": "Claude Profiles",
+        "icon": "$(cloud-upload)"
+      },
+      {
+        "command": "claudeProfiles.delete",
+        "title": "Delete Profile…",
+        "category": "Claude Profiles",
+        "icon": "$(trash)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "claudeProfiles.refresh",
+          "when": "view == claudeProfiles.list",
+          "group": "navigation@1"
+        },
+        {
+          "command": "claudeProfiles.import",
+          "when": "view == claudeProfiles.list",
+          "group": "more@1"
+        },
+        {
+          "command": "claudeProfiles.export",
+          "when": "view == claudeProfiles.list",
+          "group": "more@2"
+        },
+        {
+          "command": "claudeProfiles.delete",
+          "when": "view == claudeProfiles.list",
+          "group": "more@3"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "test": "tsc -p . && node --test out/*.test.js",
+    "vscode:prepublish": "npm run compile",
+    "package": "vsce package",
+    "install-ext": "npm run package && code --install-extension ajayff4-claude-account-switcher-0.1.0.vsix --force"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/vscode": "~1.90.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "^5.6.0"
+  }
+}

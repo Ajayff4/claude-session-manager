@@ -1,0 +1,12 @@
+node_modules/
+out/
+*.vsix
+# Dev-host VS Code profile: holds your local settings, never commit
+.vscode-dev-data/
+# Never commit profile exports or Claude state
+claude-profiles*.json
+.credentials.json
+.claude.json
+.claude/
+.env*
+*.log
