@@ -2,7 +2,7 @@
   "name": "ajayff4-claude-account-switcher",
   "displayName": "Ajayff4 Claude Account Switcher",
   "description": "Switch between multiple Claude Code accounts in VS Code: add, switch, log in, export/import and delete profiles from a sidebar panel. Unofficial.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "ajayff4",
   "license": "MIT",
   "author": {
@@ -52,7 +52,7 @@
       "claudeProfiles": [
         {
           "id": "claudeProfiles.list",
-          "name": "Profiles",
+          "name": "Claude Profiles",
           "type": "webview",
           "icon": "resources/icon.svg"
         }
@@ -133,7 +133,7 @@
     "test": "tsc -p . && node --test out/*.test.js",
     "vscode:prepublish": "npm run compile",
     "package": "vsce package",
-    "install-ext": "npm run package && code --install-extension ajayff4-claude-account-switcher-0.1.0.vsix --force"
+    "install-ext": "npm run package && code --install-extension ajayff4-claude-account-switcher-$npm_package_version.vsix --force"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",

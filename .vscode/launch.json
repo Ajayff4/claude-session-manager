@@ -11,7 +11,7 @@
         "--user-data-dir=${workspaceFolder}/.vscode-dev-data"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: compile"
+      "preLaunchTask": "compile"
     }
   ]
 }

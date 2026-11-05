@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0
+
+- Switching profiles reloads the window automatically, no confirmation dialog
+- Redesigned sidebar panel: cleaner cards, theme-aware avatar colors, empty state
+- Animated RGB border on the active, logged-in profile
+- Login and logout work without the standalone `claude` CLI by falling back to the Claude Code extension's bundled binary
+- New profiles show up in the panel immediately after creation
+- Panel title shows "Claude Profiles" once instead of "Claude Profiles: Profiles"
+
 ## 0.1.0
 
 First release.

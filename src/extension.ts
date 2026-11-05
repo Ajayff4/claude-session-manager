@@ -44,9 +44,23 @@ async function switchTo(p: Profile): Promise<void> {
       `VS Code was started with CLAUDE_CONFIG_DIR=${process.env.CLAUDE_CONFIG_DIR}, so 'default' can't apply. Start VS Code without it.`);
     return;
   }
-  const pick = await vscode.window.showInformationMessage(
-    `Claude profile → ${p.name} (${accountEmail(p)}). Reload window so open Claude tabs use it?`, 'Reload Window');
-  if (pick) await vscode.commands.executeCommand('workbench.action.reloadWindow');
+  await vscode.commands.executeCommand('workbench.action.reloadWindow');
+}
+
+// `claude` may not be on PATH at all: the official extension ships its own CLI, and many users never
+// install the standalone one. Check PATH, then ~/.local/bin, then the extension's bundled binary.
+function claudeBinary(): string {
+  const exe = process.platform === 'win32' ? 'claude.exe' : 'claude';
+  const usable = (f?: string) => {
+    if (!f) return false;
+    try { fs.accessSync(f, fs.constants.X_OK); return true; } catch { return false; }
+  };
+  const bundled = vscode.extensions.getExtension('anthropic.claude-code')?.extensionPath;
+  return [
+    ...(process.env.PATH || '').split(path.delimiter).map((d) => path.join(d, exe)),
+    path.join(HOME, '.local', 'bin', exe),
+    bundled && path.join(bundled, 'resources', 'native-binary', exe),
+  ].find(usable) || exe;
 }
 
 function loginInTerminal(p: Profile): void {
@@ -55,10 +69,11 @@ function loginInTerminal(p: Profile): void {
     vscode.window.showErrorMessage(`Refusing to log in: ${p.dir} is not a Claude profile (set by workspace settings?).`);
     return;
   }
-  const t =vscode.window.createTerminal({ name: `Claude login: ${p.name}` });
+  const bin = shQuote(claudeBinary());
+  const t = vscode.window.createTerminal({ name: `Claude login: ${p.name}` });
   t.show();
-  const prefix = p.dir === MAIN ? 'env -u CLAUDE_CONFIG_DIR' : `CLAUDE_CONFIG_DIR=${shQuote(p.dir)}`;
-  t.sendText(`${prefix} claude auth login && ${prefix} claude auth status`);
+  const prefix = p.dir === MAIN ? `env -u CLAUDE_CONFIG_DIR ${bin}` : `CLAUDE_CONFIG_DIR=${shQuote(p.dir)} ${bin}`;
+  t.sendText(`${prefix} auth login && ${prefix} auth status`);
 }
 
 async function addProfile(): Promise<void> {
@@ -74,20 +89,22 @@ async function addProfile(): Promise<void> {
     vscode.window.showErrorMessage(`Could not create profile '${name}': ${(e as Error).message}`);
     return;
   }
-  const pick = await vscode.window.showInformationMessage(`Profile '${name}' created. Log in now?`, 'Log in (terminal)', 'Switch to it');
-  if (pick === 'Log in (terminal)') loginInTerminal(p);
-  if (pick === 'Switch to it') await switchTo(p);
+  // Not awaited: callers refresh the panel when this returns, but the profile is already created,
+  // so it should appear immediately instead of waiting for the prompt below to be dismissed.
+  void vscode.window.showInformationMessage(`Profile '${name}' created. Log in now?`, 'Log in (terminal)', 'Switch to it')
+    .then((pick) => {
+      if (pick === 'Log in (terminal)') loginInTerminal(p);
+      if (pick === 'Switch to it') return switchTo(p);
+    })
+    .then(undefined, (e) => vscode.window.showErrorMessage(`Could not switch profile: ${(e as Error).message}`));
 }
 
 // `claude auth logout` for one profile. execFile = no shell, so the path can't inject anything.
-// VS Code launched from a desktop icon may lack ~/.local/bin on PATH, hence the fallback.
 // Resolves to an error message, or undefined on success.
 async function logout(dir: string): Promise<string | undefined> {
-  const run = (bin: string) => new Promise<string | undefined>((res) =>
-    execFile(bin, ['auth', 'logout'], { env: { ...process.env, CLAUDE_CONFIG_DIR: dir }, timeout: 30_000 },
+  return new Promise<string | undefined>((res) =>
+    execFile(claudeBinary(), ['auth', 'logout'], { env: { ...process.env, CLAUDE_CONFIG_DIR: dir }, timeout: 30_000 },
       (e, _out, stderr) => res(e ? (String(stderr).trim() || e.message) : undefined)));
-  const err = await run('claude');
-  return err && /ENOENT/.test(err) ? run(path.join(HOME, '.local', 'bin', 'claude')) : err;
 }
 
 async function deleteProfile(p?: Profile): Promise<void> {
